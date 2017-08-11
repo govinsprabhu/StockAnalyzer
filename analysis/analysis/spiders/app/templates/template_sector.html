@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+		<title>Sector Wise Analysis of BSE stocks</title>
+		<meta name="description" content="Sector wise analysis" />
+		<meta name="keywords" content="Sector wise analysis" />
+		<meta name="author" content="Codrops" />
+		<link rel="shortcut icon" href="../favicon.ico">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/normalize.css') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/demo.css') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/component.css') }}" />
+		<!--[if IE]>
+  		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+	</head>
+	<body>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js"></script>
+		<script src="{{ url_for('static',filename='styles/js/jquery.stickyheader.js')}}"></script>
+		<div class="container">
+			<!-- Top Navigation -->
+			<header style="margin-bottom:10px">
+				<h1>Sector Wise Analysis for <em>BSE</em> Stock <span>Share in {{sectorName}}</span></h1>
+			</header>
+			<div class="back_button_div" style="float: left;padding-left:80px;margin-bottom:10px;">
+					<input type="button" value="Back" id="back_button" onclick="history.go(-1);return true;">
+					
+			</div>
+			<div  style=" float: right;padding-left:80px;margin-bottom:10px; margin-right:80px;">
+				<input id="refresh" type="image"  src="{{url_for('static',filename='images/button_blue_repeat.png')}}" style="width:32px;height:32px;">	
+			</div>	
+			<div class="component">
+				<table class="sectors">
+					<thead>
+						<tr>
+						{% for header in headers %}
+						<th>{{header}}</th>
+						{% endfor %}
+						</tr>
+					</thead>
+					<tbody>
+					{% for sector in sectors %}
+						<tr>
+							<th><a href={{sector.url}}><b>{{sector.name}}</b></a></th><td>{{sector.points}}</td><td>{{sector.share_price}}</td><td>{{sector.eps}}</td><td>{{sector.pe}}</td><td>{{sector.industry_pe}}</td><td>{{sector.market_cap}}</td><td>{{sector.book_value}}</td><td>{{sector.price_by_book}}</td><td>{{sector.div}}</td>
+							<th><a href = '/portfolio/add?url={{sector.url}}' class= 'getUrl'>Add to Portfolio</a>
+						</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div><!-- /container -->
+		<script>
+		$(document).ready(function(){
+			$("#refresh").click(function(){
+				var url = window.location.pathname; 
+				var sectorName = window.location.pathname
+				sectorName = sectorName.split('/')[sectorName.split('/').length - 1]
+				console.log('sector name '+sectorName);
+				$.get('http://localhost:5000/sector/'+sectorName+'/refresh', function(data, status){
+					location.reload();
+				});
+			});
+	});
+		</script>
+		</script>
+		
+	</body>
+</html>

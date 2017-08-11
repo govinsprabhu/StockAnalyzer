@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+		<title>Sector Wise Analysis of BSE stocks</title>
+		<meta name="description" content="Sector wise analysis" />
+		<meta name="keywords" content="Sector wise analysis" />
+		<meta name="author" content="Codrops" />
+		<link rel="shortcut icon" href="../favicon.ico">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/css/normalize_main.css') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/css/demo_main.css') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/css/component_main.css') }}" />
+		<!--[if IE]>
+  		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+	</head>
+	<body>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js"></script>
+		<script src="{{ url_for('static',filename='styles/js/jquery.stickyheader.js')}}"></script>
+		<link rel="stylesheet" href="{{ url_for('static',filename='styles/chosen.css')}}"></script>
+		<script src="{{ url_for('static',filename='styles/chosen.jquery.js')}}"></script>
+		<div class="container">
+			<!-- Top Navigation -->
+			<header>
+				<h1>Sector Wise Analysis for <em>BSE</em> Stock <span>Select a sector to be analysed</span></h1>
+				<div class="dropdown">
+					<button onclick="showContent()" class="dropbtn">Portfolios</button>
+						<div id="myDropdown" class="dropdown-content">
+							{% for portfolio in portfolios %}
+								<a href=portfolio/{{portfolio}}>{{portfolio}}</a>
+							{% endfor %}
+						</div>
+				</div>
+				<select data-placeholder="Choose a Stock..." class="chosen-select" id="chosen-select" style="width:350px;" tabindex="2">
+					<option value=""></option>
+					{% for comapany in comapanies %}
+						<option value="{{comapany.url}}">{{comapany.name}}</option>
+					{% endfor %}
+				</select>
+				<input type = 'button' value = 'go' id = 'add'> </input>				
+			</header>
+			<div class="component">
+				<table class="sectors">
+					<thead>
+						<tr><th>{{headers.sector}}</th></tr>
+					</thead>
+					<tbody>
+					{% for sector in sectors %}
+						<tr><td><a href={{sector.link}}><b>{{sector.name}}</b></a></tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div><!-- /container -->
+		<script>
+			$(document).ready(function(){
+				$("#add").click(function(){
+					var url = jQuery("#chosen-select option:selected").val();
+					var fullUrl = 'http://localhost:5000/get?url='+url;
+					console.log("******************url of chooese select **********  "+fullUrl);
+					window.location.href = fullUrl;
+					
+				});
+			});
+		</script>
+		<script type="text/javascript">
+			var config = {
+				'.chosen-select'           : {}			
+			}
+			for (var selector in config) {
+				$(selector).chosen();
+			}
+		</script>
+		<script>
+			/* When the user clicks on the button, 
+			toggle between hiding and showing the dropdown content */
+			function showContent() {
+				document.getElementById("myDropdown").classList.toggle("show");
+			}
+			
+			// Close the dropdown if the user clicks outside of it
+			window.onclick = function(event) {
+				if (!event.target.matches('.dropbtn')) {
+				
+					var dropdowns = document.getElementsByClassName("dropdown-content");
+					var i;
+					for (i = 0; i < dropdowns.length; i++) {
+					var openDropdown = dropdowns[i];
+					if (openDropdown.classList.contains('show')) {
+						openDropdown.classList.remove('show');
+					}
+					}
+				}
+			}
+		</script>
+	</body>
+</html>

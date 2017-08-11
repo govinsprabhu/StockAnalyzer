@@ -1,0 +1,214 @@
+import scrapy
+import logging
+import matplotlib.pyplot as plt
+import numpy as np
+import sys
+import os
+from scrapy.crawler import CrawlerProcess 
+
+def getFirstWord(name):
+    banks =[]
+    for word in name:
+        banks.append(str(word).split()[0])
+    return banks
+
+def plotFigure(param,x_label,y_label):
+    plt.clf()
+    width  = 1/1.5
+    x_plot = np.arange(len(param))
+    y_plot = param
+    plt.bar(x_plot,y_plot, width)
+    plt.ylabel(y_label)
+    plt.xlabel(x_label)
+    x_ticks = getFirstWord(StockDetailsSpider.stock.names)
+    plt.xticks(x_plot, x_ticks)
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=90)
+    pdf_name = ('data/%s/%s-%s.pdf' %(x_label,x_label,y_label))
+    plt.savefig(pdf_name, format='pdf')
+    logging.debug('Saving file %s' %pdf_name)
+
+def addUrl(sector):
+    logging.debug('File name data/%s.txt' %sector)
+    fileName = 'data/%s.txt' % sector
+    logging.debug(fileName)
+    f = open(fileName,'r')
+    domain = 'http://www.moneycontrol.com'
+    for i in f:
+        logging.debug('url to be crawled :%s' %(domain+i))
+        StockDetailsSpider.url.append(domain + i)
+
+def getProcessor():
+    logging.debug('Calling getProcess')
+    return CrawlerProcess({
+        'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
+        })
+
+def plotAll(sector):
+    plotFigure(StockDetailsSpider.stock.pe, sector,'PE')
+    plotFigure(StockDetailsSpider.stock.eps, sector,'EPS')
+    plotFigure(StockDetailsSpider.stock.market_cap, sector,'Market Cap')
+    plotFigure(StockDetailsSpider.stock.book_value, sector,'Book Value')
+    plotFigure(StockDetailsSpider.stock.price_by_book, sector,'Price by book')
+    plotFigure(StockDetailsSpider.stock.share_price, sector,'Share Price')
+    plotFigure(StockDetailsSpider.stock.div, sector,'div')
+
+def writeToCSV(sector):
+    headers = ['Name','Share Price','EPS','P/E','Industry P/e','Market Cap','Book value','Price By Book','Div','Url']
+    path  = 'data/%s' %sector
+    makeSurePathExists(path)
+    csvName = ('%s/fullData.csv' %path)
+    f = open(csvName,'w+')
+    for i in headers:
+        f.write(str(i)+',')
+
+    f.write('\n')
+    ind = 0
+    for name in StockDetailsSpider.stock.names:
+        f.write(name+',')
+        f.write(str(StockDetailsSpider.stock.share_price[ind])+',')
+        f.write(str(StockDetailsSpider.stock.eps[ind])+',')
+        f.write(str(StockDetailsSpider.stock.pe[ind])+',')
+        f.write(str(StockDetailsSpider.stock.industry_pe[ind])+',')
+        f.write(str(StockDetailsSpider.stock.market_cap[ind])+',')
+        f.write(str(StockDetailsSpider.stock.book_value[ind])+',')
+        f.write(str(StockDetailsSpider.stock.price_by_book[ind])+',') 
+        f.write(str(StockDetailsSpider.stock.div[ind])+',')
+        f.write(str(StockDetailsSpider.stock.url[ind]))
+        f.write('\n')
+        ind += 1
+
+def htmlTable():
+    headers = ['Name','Share Price','EPS','P/E','Industry P/e','Market Cap','Book value','Price By Book','Div','Url']
+    ind = 0
+    sectors = []
+    logging.debug('number of companies %s' %len(StockDetailsSpider.stock.names))
+    for name in StockDetailsSpider.stock.names:
+        logging.debug('name %s' %name)
+        name =  name
+	share_price = str(StockDetailsSpider.stock.share_price[ind])
+        eps = str(StockDetailsSpider.stock.eps[ind])
+        pe = str(StockDetailsSpider.stock.pe[ind])
+        industry_pe = str(StockDetailsSpider.stock.industry_pe[ind])
+        market_cap = str(StockDetailsSpider.stock.market_cap[ind])
+        book_value = str(StockDetailsSpider.stock.book_value[ind])
+        price_by_book = str(StockDetailsSpider.stock.price_by_book[ind])
+        div = str(StockDetailsSpider.stock.div[ind])
+        url = str(StockDetailsSpider.stock.url[ind])
+        sector = {'share_price' : share_price, 'eps' : eps, 'pe':pe,'industry_pe':industry_pe,'market_cap':market_cap, 'book_value': book_value, 'price_by_book':price_by_book,'div':div, 'url':url}
+	sectors.append(sector)
+	ind += 1
+
+    #f  = open('html/template.html')
+    #s = f.read().replace('{table}',table)		
+    return render_template('template_sector.html',headers=headers, sectors = sectors)
+
+def makeSurePathExists(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
+def getSectorFromUser():
+    f = open('data/SectorWiseUrls.txt','r')
+    index = 0
+    sectorList = []
+    logging.debug('reading from file :%s', f)
+    for i in f:
+        ar = i.split('/')
+        sector = ar[len(ar) - 1].replace('.html','')
+        sectorList.append(sector)
+        logging.debug('%s. %s' %(i, sector))
+
+    sector = 'tyres'
+    return sector
+
+
+class Stock:
+    def __init__(self):
+        self.names = []
+        self.eps = []
+        self.pe = []
+        self.market_cap = []
+        self.book_value = []
+        self.price_by_book = []
+        self.industry_pe = []
+        self.book_value = []
+        self.div =[]
+        self.face_value = []
+        self.market_lot = []
+        self.p_c = []
+        self.div_yield = []
+        self.share_price = []
+        self.url = []
+
+class StockDetailsSpider(scrapy.Spider):
+    name = "stockDetails"
+    url = []
+    stock = Stock()
+    ind = 0
+    def __init__(self,*args, **kwargs):
+        super(StockDetailsSpider, self).__init__(*args, **kwargs)
+        self.start_urls = StockDetailsSpider.url
+        logging.debug('start url %s' %self.start_urls)
+
+    def parse(self, response):
+        share_price = response.xpath('//span[@id="Bse_Prc_tick"]/strong/text()')[0].extract()
+        StockDetailsSpider.stock.share_price.append(float(str(share_price)))
+        self.param = response.xpath('//div[@class="FL gL_10 UC"]/text()').extract()
+        self.value = response.xpath('//div[@class="FR gD_12"]/text()').extract()
+        name = response.xpath('//span[@typeof="v:Breadcrumb"]/text()')[8].extract()
+        name = name.replace('\n','')
+        name = name.replace('\t','')
+        StockDetailsSpider.stock.names.append(name)
+        StockDetailsSpider.stock.url.append(response.url)
+        logging.debug('name : %s'%StockDetailsSpider.stock.names[StockDetailsSpider.ind])
+        StockDetailsSpider.ind += 1
+        index = 0
+        for i,j in zip(self.param,self.value):
+            if index == 11:
+                break
+            index += 1
+            lis = self.getList(StockDetailsSpider.stock, str(i))
+            j = j.strip()
+            if (j == '-' or  j == '' or j == '-%'):
+                j = 0
+            else:
+                j = j.replace('%','').replace(',','')
+            logging.debug('%s %s '%(i,j)) 
+            lis.append(float(j))
+
+
+    def getList(self,stock,key):
+        return { 'MARKET CAP (Rs Cr)': stock.market_cap,
+                 'P/E': stock.pe,
+                 'BOOK VALUE (Rs)':stock.book_value,
+                 'DIV (%)': stock.div,
+                 'INDUSTRY P/E' : stock.industry_pe,
+                 'EPS (TTM)': stock.eps,
+                 'PRICE/BOOK' : stock.price_by_book,
+                 'FACE VALUE (Rs)' : stock.face_value,
+                 'Market Lot' : stock.market_lot,
+                 'P/C' : stock.p_c,
+                 'DIV YIELD.(%)':stock.div_yield
+             }[key]
+
+
+
+#change the sector name to the one you want
+
+def stockDetails(sSector,process):
+    logging.debug('********Sector name :%s***********' %sSector)
+    sector = sSector
+    logging.debug('After assignment')
+    logging.debug('After calling getProcess ***')
+    addUrl(sector)
+    process.crawl(StockDetailsSpider)
+    process.start()
+    #plotAll(sector) stop_after_crawl=False
+    #writeToCSV(sector)
+    page = htmlTable()
+    logging.debug('*******closng spider *******')
+    process.stop()
+    return page	
+
+
