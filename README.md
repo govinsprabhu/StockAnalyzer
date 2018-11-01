@@ -1,9 +1,13 @@
--------STOCK ANALYZER------
+### STOCK ANALYZER ##
 
-This is a simple web app developed for thoes who feel difficult to track there stock portfolio and analyze it.
-This will help you to track the stocks according to the sectors. There are more than 2000 bse companies are provided in around 
+This is a web app developed for thoes who feel difficult to track there stock portfolio and analyze it.
+This will help you to track the stocks according to the sectors. There are more than 2000 BSE companies are provided in around 
 50 sectors. 
-
+Using this web app
+	
+	* See there sector wise stocks and there financial ratios
+	* Track and add to your custom portfolios
+	
 Installation details
  
 	* You should have python 2.7 or above and mongoDB in the database side
