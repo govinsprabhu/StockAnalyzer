@@ -1,6 +1,6 @@
 ### STOCK ANALYZER ##
 
-This is a web app developed for thoes who feel difficult to track there stock portfolio and analyze it.
+This is a web app developed for those who feel difficult to track their stock portfolio and analyze it.
 This will help you to track the stocks according to the sectors. There are more than 2000 BSE companies are provided in around 
 50 sectors. 
 Using this web app
